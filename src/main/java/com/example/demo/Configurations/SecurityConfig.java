@@ -41,6 +41,8 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             .requestMatchers("/auth/login").permitAll()
             .requestMatchers("/public/**").permitAll()
             .requestMatchers("/api/productos/**").hasRole("ADMIN")
+            .requestMatchers("/api/inventario/**").hasAnyRole("ADMIN", "EMPLEADO")
+
             .anyRequest().authenticated()
         )
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

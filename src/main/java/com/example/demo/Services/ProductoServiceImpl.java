@@ -2,14 +2,12 @@ package com.example.demo.Services;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.Models.Producto;
 import com.example.demo.Repositories.ProductoRepository;
-import com.example.demo.Services.ProductoService;
 
 @Service
 public class ProductoServiceImpl implements ProductoService {
