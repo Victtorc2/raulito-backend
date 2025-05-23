@@ -5,8 +5,8 @@ import java.time.LocalDate;
 
 import com.example.demo.Models.TipoMovimiento;
 
-import lombok.Data;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
@@ -16,6 +16,8 @@ import lombok.NoArgsConstructor;
 
 public class MovimientoInventarioResponseDTO {
     private String productoNombre; 
+    private int precio;
+
     private String categoria; 
     private int cantidad;
     private String ubicacion;

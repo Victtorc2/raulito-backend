@@ -23,6 +23,7 @@ public class Producto {
 
     private long id;
     private String nombre;
+    private int precio;
     private String codigo;
     private String categoria;
     private int stock;

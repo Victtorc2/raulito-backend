@@ -1,7 +1,9 @@
 package com.example.demo.Services;
 
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 
 import com.example.demo.DTO.MovimientoInventarioDTO;
@@ -12,9 +14,7 @@ import com.example.demo.Models.TipoMovimiento;
 import com.example.demo.Repositories.MovimientoInventarioRepository;
 import com.example.demo.Repositories.ProductoRepository;
 
-import java.time.LocalDate;
-import java.util.List; 
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 
 
@@ -42,6 +42,8 @@ public MovimientoInventarioResponseDTO registrarMovimiento(MovimientoInventarioD
     // Mapear a DTO de respuesta con nombre y categoría del producto
     MovimientoInventarioResponseDTO response = new MovimientoInventarioResponseDTO();
     response.setProductoNombre(producto.getNombre());
+    response.setPrecio(producto.getPrecio());
+
     response.setCategoria(producto.getCategoria());
     response.setCantidad(guardado.getCantidad());
     response.setUbicacion(guardado.getUbicacion());
@@ -58,7 +60,10 @@ public MovimientoInventarioResponseDTO registrarMovimiento(MovimientoInventarioD
         return movimientoRepo.findAll().stream().map(m -> {
             MovimientoInventarioResponseDTO dto = new MovimientoInventarioResponseDTO();
             dto.setProductoNombre(m.getProducto().getNombre());
+            
             dto.setCategoria(m.getProducto().getCategoria());
+            dto.setPrecio(m.getProducto().getPrecio()); // 👈 NUEVO
+
             dto.setCantidad(m.getCantidad());
             dto.setUbicacion(m.getUbicacion());
             dto.setObservacion(m.getObservacion());
@@ -75,7 +80,10 @@ public MovimientoInventarioResponseDTO registrarMovimiento(MovimientoInventarioD
                 .map(m -> {
                     MovimientoInventarioResponseDTO dto = new MovimientoInventarioResponseDTO();
                     dto.setProductoNombre(m.getProducto().getNombre());
+                    dto.setPrecio(m.getProducto().getPrecio());
+
                     dto.setCategoria(m.getProducto().getCategoria());
+                    
                     dto.setCantidad(m.getCantidad());
                     dto.setUbicacion(m.getUbicacion());
                     dto.setObservacion(m.getObservacion());
@@ -111,6 +119,8 @@ public List<MovimientoInventarioResponseDTO> filtrarPorTipo(TipoMovimiento tipo)
                 MovimientoInventarioResponseDTO dto = new MovimientoInventarioResponseDTO();
                 dto.setProductoNombre(m.getProducto().getNombre());
                 dto.setCategoria(m.getProducto().getCategoria());
+                dto.setPrecio(m.getProducto().getPrecio()); // 👈 NUEVO
+
                 dto.setCantidad(m.getCantidad());
                 dto.setUbicacion(m.getUbicacion());
                 dto.setObservacion(m.getObservacion());
