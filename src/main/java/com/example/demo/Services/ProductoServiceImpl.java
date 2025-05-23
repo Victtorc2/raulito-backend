@@ -2,6 +2,7 @@ package com.example.demo.Services;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -63,6 +64,8 @@ public List<Producto> buscarPorCategoria(String categoria) {
 public List<Producto> buscarPorCodigo(String codigo) {
     return productoRepository.findByCodigoIgnoreCase(codigo);
 }
+
+
 
 
 

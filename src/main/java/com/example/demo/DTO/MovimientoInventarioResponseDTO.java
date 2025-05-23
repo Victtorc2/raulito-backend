@@ -14,8 +14,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 
-public class MovimientoInventarioDTO {
+public class MovimientoInventarioResponseDTO {
     private String productoNombre;
+    private String categoria;
     private int cantidad;
     private String ubicacion;
     private String observacion;
