@@ -5,6 +5,7 @@ import java.time.LocalDate;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -30,7 +31,9 @@ public class MovimientoInventario {
     @ManyToOne
     @JoinColumn(name = "producto_id", nullable = false)
     private Producto producto;
-    private int precio;
+        @Column(nullable = false)
+
+    private Integer  precio;
     private int cantidad;
     private String ubicacion;
     private String observacion;

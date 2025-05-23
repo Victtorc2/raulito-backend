@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 
 public class MovimientoInventarioResponseDTO {
     private String productoNombre; 
-    private int precio;
+    private Double precio;
 
     private String categoria; 
     private int cantidad;

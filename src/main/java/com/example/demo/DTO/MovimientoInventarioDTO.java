@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class MovimientoInventarioDTO {
   private Long productoId;
   private String nombreProducto;
-  private int precio;
+    private Double precio;
 
   private String categoriaProducto;
   private int cantidad;

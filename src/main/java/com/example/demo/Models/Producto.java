@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -23,7 +24,9 @@ public class Producto {
 
     private long id;
     private String nombre;
-    private int precio;
+    @Column(nullable = false)
+
+    private Double precio;
     private String codigo;
     private String categoria;
     private int stock;
