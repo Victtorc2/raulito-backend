@@ -15,8 +15,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 
 public class MovimientoInventarioResponseDTO {
-    private String productoNombre;
-    private String categoria;
+    private String productoNombre; // para mostrar el nombre
+    private String categoria; // <-- agrega esto
+
     private int cantidad;
     private String ubicacion;
     private String observacion;

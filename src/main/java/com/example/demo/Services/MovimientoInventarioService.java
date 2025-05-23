@@ -12,9 +12,9 @@ public interface MovimientoInventarioService {
 
     List<MovimientoInventarioResponseDTO> listarMovimientos();
 
-    List<MovimientoInventario> filtrarPorCategoria(String categoria);
+List<MovimientoInventarioResponseDTO> filtrarPorCategoria(String categoria);
 
     List<Producto> listarStockBajo();
 
-    List<Producto> listarProximosAVencer();
+    List<Producto> listarProximosVencimientos();
 }

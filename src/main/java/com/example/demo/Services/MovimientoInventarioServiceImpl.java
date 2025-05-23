@@ -25,7 +25,7 @@ public class MovimientoInventarioServiceImpl implements MovimientoInventarioServ
     @Override
     @Transactional
     public MovimientoInventario registrarMovimiento(MovimientoInventarioDTO dto) {
-        Producto producto = productoRepo.findByNombre(dto.getProductoNombre())
+        Producto producto = productoRepo.findById(dto.getProductoId())
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
         MovimientoInventario movimiento = new MovimientoInventario();
@@ -36,7 +36,7 @@ public class MovimientoInventarioServiceImpl implements MovimientoInventarioServ
         movimiento.setTipo(dto.getTipo());
         movimiento.setFecha(dto.getFecha());
 
-        // Ajuste de stock
+        // Ajuste de stock según tipo de movimiento
         switch (dto.getTipo()) {
             case INGRESO -> producto.setStock(producto.getStock() + dto.getCantidad());
             case SALIDA -> producto.setStock(producto.getStock() - dto.getCantidad());
@@ -51,8 +51,9 @@ public class MovimientoInventarioServiceImpl implements MovimientoInventarioServ
     public List<MovimientoInventarioResponseDTO> listarMovimientos() {
         return movimientoRepo.findAll().stream().map(m -> {
             MovimientoInventarioResponseDTO dto = new MovimientoInventarioResponseDTO();
-            dto.setProductoNombre(m.getProducto().getNombre());
-            dto.setCategoria(m.getProducto().getCategoria());
+            dto.setProductoNombre(m.getProducto().getNombre()); // Nombre para mostrar
+dto.setCategoria(m.getProducto().getCategoria()); // <-- esto ya funcionará
+
             dto.setCantidad(m.getCantidad());
             dto.setUbicacion(m.getUbicacion());
             dto.setObservacion(m.getObservacion());
@@ -62,12 +63,23 @@ public class MovimientoInventarioServiceImpl implements MovimientoInventarioServ
         }).collect(Collectors.toList());
     }
 
-    @Override
-    public List<MovimientoInventario> filtrarPorCategoria(String categoria) {
-        return movimientoRepo.findAll().stream()
-                .filter(m -> m.getProducto().getCategoria().equalsIgnoreCase(categoria))
-                .collect(Collectors.toList());
-    }
+   @Override
+public List<MovimientoInventarioResponseDTO> filtrarPorCategoria(String categoria) {
+    return movimientoRepo.findAll().stream()
+            .filter(m -> m.getProducto().getCategoria().equalsIgnoreCase(categoria))
+            .map(m -> {
+                MovimientoInventarioResponseDTO dto = new MovimientoInventarioResponseDTO();
+                dto.setProductoNombre(m.getProducto().getNombre());
+                dto.setCategoria(m.getProducto().getCategoria()); // <-- aquí también
+                dto.setCantidad(m.getCantidad());
+                dto.setUbicacion(m.getUbicacion());
+                dto.setObservacion(m.getObservacion());
+                dto.setTipo(m.getTipo());
+                dto.setFecha(m.getFecha());
+                return dto;
+            }).collect(Collectors.toList());
+}
+
 
     @Override
     public List<Producto> listarStockBajo() {
@@ -77,7 +89,7 @@ public class MovimientoInventarioServiceImpl implements MovimientoInventarioServ
     }
 
     @Override
-    public List<Producto> listarProximosAVencer() {
+    public List<Producto> listarProximosVencimientos() {
         LocalDate hoy = LocalDate.now();
         LocalDate limite = hoy.plusDays(7);
 

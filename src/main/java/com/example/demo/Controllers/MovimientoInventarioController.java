@@ -34,11 +34,11 @@ public class MovimientoInventarioController {
         return movimientoInventarioService.listarMovimientos();
     }
 
-    @GetMapping("/categoria/{nombre}")
+    /*@GetMapping("/categoria/{nombre}")
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public List<MovimientoInventario> filtrarPorCategoria(@PathVariable String nombre) {
         return movimientoInventarioService.filtrarPorCategoria(nombre);
-    }
+    } */
 
     @GetMapping("/stock-bajo")
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
@@ -49,6 +49,6 @@ public class MovimientoInventarioController {
     @GetMapping("/proximos-vencimientos")
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public List<Producto> listarProximosVencimientos() {
-        return movimientoInventarioService.listarProximosAVencer();
+        return movimientoInventarioService.listarProximosVencimientos();
     }
 }
