@@ -22,34 +22,34 @@ public class VentaController {
     private VentaService ventaService;
 
     @PostMapping
-    @PreAuthorize("hasRole('EMPLEADO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<VentaResponseDTO> registrarVenta(@RequestBody VentaRequestDTO ventaDTO) {
         VentaResponseDTO nuevaVenta = ventaService.registrarVenta(ventaDTO);
         return ResponseEntity.ok(nuevaVenta);
     }
 
     @GetMapping("/historial")
-    @PreAuthorize("hasRole('EMPLEADO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<List<VentaResponseDTO>> obtenerHistorial() {
         List<VentaResponseDTO> historial = ventaService.obtenerTodasLasVentas();
         return ResponseEntity.ok(historial);
     }
 
     @GetMapping("/estadisticas")
-    @PreAuthorize("hasRole('EMPLEADO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<EstadisticasVentaDTO> obtenerEstadisticas() {
         EstadisticasVentaDTO estadisticas = ventaService.obtenerEstadisticas();
         return ResponseEntity.ok(estadisticas);
     }
 
     @GetMapping("/reporte/por-dia")
-    @PreAuthorize("hasRole('EMPLEADO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<List<VentaDiariaDTO>> obtenerReportePorDia() {
         return ResponseEntity.ok(ventaService.obtenerVentasPorDia());
     }
 
     @GetMapping("/reporte/por-mes")
-    @PreAuthorize("hasRole('EMPLEADO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<List<VentaMensualDTO>> obtenerReportePorMes() {
         return ResponseEntity.ok(ventaService.obtenerVentasPorMes());
     }
