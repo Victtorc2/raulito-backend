@@ -71,7 +71,6 @@ public class ProductoController {
         producto.setCategoria(productoDTO.getCategoria());
         producto.setPrecio(productoDTO.getPrecio());
 
-        // producto.setStock(productoDTO.getStock());
         producto.setProveedor(productoDTO.getProveedor());
         producto.setPresentacion(productoDTO.getPresentacion());
         producto.setFechaVencimiento(productoDTO.getFechaVencimiento());
