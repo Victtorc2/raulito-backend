@@ -37,14 +37,15 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         .and()
         .csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-            .requestMatchers("/auth/login").permitAll()
-            .requestMatchers("/public/**").permitAll()
-            .requestMatchers("/api/productos/**").hasRole("ADMIN")
-            .requestMatchers("/api/inventario/**").hasAnyRole("ADMIN", "EMPLEADO")
+    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+    .requestMatchers("/auth/login").permitAll()
+    .requestMatchers("/public/**").permitAll()
+    .requestMatchers("/api/productos/*/imagen").permitAll()  // <-- Primero esta
+    .requestMatchers("/api/productos/**").hasRole("ADMIN")   // <-- Después esta más general
+    .requestMatchers("/api/inventario/**").hasAnyRole("ADMIN", "EMPLEADO")
+    .anyRequest().authenticated()
+)
 
-            .anyRequest().authenticated()
-        )
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
     return http.build();

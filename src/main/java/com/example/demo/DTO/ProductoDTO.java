@@ -18,6 +18,5 @@ public class ProductoDTO {
     private int stock;
     private String proveedor;
     private String presentacion;
-    private String imagen;
     private LocalDate fechaVencimiento;
 }

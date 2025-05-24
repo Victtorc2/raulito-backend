@@ -16,5 +16,8 @@ public interface ProductoService {
     List<Producto> buscarPorNombre(String nombre);
 List<Producto> buscarPorCategoria(String categoria);
 List<Producto> buscarPorCodigo(String codigo);
+List<Producto> listarProductosProximosAVencer(int dias);
+List<Producto> listarProductosStockBajo(int stockMinimo);
+
 
 }

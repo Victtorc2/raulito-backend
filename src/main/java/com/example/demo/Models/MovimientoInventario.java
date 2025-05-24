@@ -33,7 +33,7 @@ public class MovimientoInventario {
     private Producto producto;
         @Column(nullable = false)
 
-    private Integer  precio;
+    private Double  precio;
     private int cantidad;
     private String ubicacion;
     private String observacion;
