@@ -22,14 +22,14 @@ public class VentaController {
     private VentaService ventaService;
 
     @PostMapping
-    @PreAuthorize("permitAll()")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<VentaResponseDTO> registrarVenta(@RequestBody VentaRequestDTO ventaDTO) {
         VentaResponseDTO nuevaVenta = ventaService.registrarVenta(ventaDTO);
         return ResponseEntity.ok(nuevaVenta);
     }
 
     @GetMapping("/historial")
-    @PreAuthorize("permitAll()")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<List<VentaResponseDTO>> obtenerHistorial() {
         List<VentaResponseDTO> historial = ventaService.obtenerTodasLasVentas();
         return ResponseEntity.ok(historial);

@@ -48,7 +48,7 @@ public class ProductoController {
     }
 
     @GetMapping
-@PreAuthorize("permitAll()")
+@PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
 public List<Producto> listarProductos(
     @RequestParam(required = false) String nombre,
     @RequestParam(required = false) String categoria,
