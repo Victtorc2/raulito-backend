@@ -41,7 +41,8 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     .requestMatchers("/auth/login").permitAll()
     .requestMatchers("/public/**").permitAll()
     .requestMatchers("/api/productos/*/imagen").permitAll()  // <-- Primero esta
-    .requestMatchers("/api/productos/**").hasRole("ADMIN")   // <-- Después esta más general
+    .requestMatchers("/api/productos/**").hasRole("ADMIN")
+    .requestMatchers("/api/usuarios/**").hasRole("ADMIN")    // <-- Después esta más general
     .requestMatchers("/api/inventario/**").hasAnyRole("ADMIN", "EMPLEADO")
         .requestMatchers("/api/ventas/**").hasAnyRole("ADMIN", "EMPLEADO")
 

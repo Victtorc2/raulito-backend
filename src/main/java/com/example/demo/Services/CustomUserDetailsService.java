@@ -1,7 +1,6 @@
 package com.example.demo.Services;
 
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,7 +12,6 @@ import java.util.stream.Collectors;
 
 import com.example.demo.Models.Usuario;
 import com.example.demo.Repositories.UsuarioRepository;
-
 
 @Service
 @RequiredArgsConstructor
