@@ -8,5 +8,6 @@ public class VentaRequestDTO {
     private Long usuarioId;
     private List<ItemVentaDTO> detalles;
     private String metodoPago;
+    private double descuento;
 }
  

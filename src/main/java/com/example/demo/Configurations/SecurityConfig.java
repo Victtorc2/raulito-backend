@@ -40,9 +40,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/auth/login").permitAll()
                         .requestMatchers("/public/**").permitAll()
-                        .requestMatchers("/api/productos/**").hasRole("ADMIN")
+                        .requestMatchers("/api/productos/**").hasAnyRole("EMPLEADO", "ADMIN")
                         .requestMatchers("/api/inventario/**").hasAnyRole("ADMIN", "EMPLEADO")
-                        .requestMatchers("/api/ventas/**").hasRole("EMPLEADO")
+                        .requestMatchers("/api/ventas/**").hasAnyRole("EMPLEADO", "ADMIN")
                         .anyRequest().authenticated())
 
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
