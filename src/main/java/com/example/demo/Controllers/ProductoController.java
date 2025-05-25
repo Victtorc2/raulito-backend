@@ -91,11 +91,12 @@ public class ProductoController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public List<Producto> listarProductos(
-            @RequestParam(required = false) String nombre,
-            @RequestParam(required = false) String categoria,
-            @RequestParam(required = false) String codigo) {
+
+@PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
+public List<Producto> listarProductos(
+    @RequestParam(required = false) String nombre,
+    @RequestParam(required = false) String categoria,
+    @RequestParam(required = false) String codigo) {
 
         if (nombre != null) {
             return productoService.buscarPorNombre(nombre);
