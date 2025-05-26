@@ -12,6 +12,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.Models.Usuario;
+
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -44,15 +46,19 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
-    public String generateToken(UserDetails userDetails) {
-        return Jwts.builder()
-                .setSubject(userDetails.getUsername())
-                .claim("authorities", userDetails.getAuthorities())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 horas
-                .signWith(secretKey, SignatureAlgorithm.HS256)
-                .compact();
-    }
+   public String generateToken(UserDetails userDetails, Usuario usuario) {  // Recibe entidad Usuario
+    Map<String, Object> claims = new HashMap<>();
+    claims.put("authorities", userDetails.getAuthorities());
+    claims.put("userId", usuario.getId());  // Añade userId al token
+    return Jwts.builder()
+            .setClaims(claims)
+            .setSubject(userDetails.getUsername())  // correo
+            .setIssuedAt(new Date(System.currentTimeMillis()))
+            .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
+            .signWith(secretKey, SignatureAlgorithm.HS256)
+            .compact();
+}
+
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);

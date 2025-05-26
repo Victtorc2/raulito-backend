@@ -25,6 +25,11 @@ public class UsuarioService {
         return usuarioRepository.findById(id);
     }
 
+    // Método para obtener un usuario por correo
+    public Optional<Usuario> obtenerPorCorreo(String correo) {
+        return usuarioRepository.findByCorreo(correo);
+    }
+
     public Usuario guardar(Usuario usuario) {
         if (usuario.getPassword() != null) {
             usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
