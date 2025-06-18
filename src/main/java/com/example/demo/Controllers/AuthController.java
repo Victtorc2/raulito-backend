@@ -8,7 +8,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetails; 
 import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.DTO.AuthRequest;
@@ -22,43 +22,40 @@ import org.slf4j.LoggerFactory;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-public class AuthController {
+public class AuthController { // Controlador para manejar la autenticación de usuarios
 
-    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class); //esta línea crea un logger para registrar eventos en el controlador 
     private final UsuarioService usuarioService;  // Inyecta UsuarioService correctamente
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtService jwtService;
-    private final CustomUserDetailsService userDetailsService;
-    
+    private final AuthenticationManager authenticationManager; // Inyecta AuthenticationManager para manejar la autenticación
+    private final JwtService jwtService; // Inyecta JwtService para generar tokens JWT
+    private final CustomUserDetailsService userDetailsService; // Inyecta CustomUserDetailsService para cargar detalles del usuario
 
 
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
-        logger.info("Login request received for correo: {}", request.getCorreo());
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getCorreo(), request.getPassword()));
-        } catch (BadCredentialsException e) {
-            logger.warn("Invalid credentials for user: {}", request.getCorreo());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+    // Método para manejar la solicitud de inicio de sesión
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(request.getCorreo());
-
-        // Aquí obtienes el usuario completo para pasar al método generateToken
-        Usuario usuario = usuarioService.obtenerPorCorreo(request.getCorreo())  // Obtén el usuario por correo
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        String token = jwtService.generateToken(userDetails, usuario);
-
-        // Obtener el primer rol
-        String role = userDetails.getAuthorities().stream()
-                .findFirst()
-                .map(GrantedAuthority::getAuthority)
-                .orElse("");
-
-        return ResponseEntity.ok(new AuthResponse(token, role));
+  @PostMapping("/login")
+public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
+    try {
+        authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(request.getCorreo(), request.getPassword()));
+    } catch (BadCredentialsException e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
+    UserDetails userDetails = userDetailsService.loadUserByUsername(request.getCorreo());
+    Usuario usuario = usuarioService.obtenerPorCorreo(request.getCorreo())
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+    String token = jwtService.generateToken(userDetails, usuario);
+
+    // Modificación clave: Remover ROLE_ del rol devuelto
+    String role = userDetails.getAuthorities().stream()
+            .findFirst()
+            .map(GrantedAuthority::getAuthority)
+            .map(authority -> authority.replace("ROLE_", "")) // Remueve ROLE_
+            .orElse("");
+
+    return ResponseEntity.ok(new AuthResponse(token, role));
+}
 }

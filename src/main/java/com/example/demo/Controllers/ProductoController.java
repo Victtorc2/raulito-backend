@@ -32,28 +32,31 @@ public class ProductoController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> crearProducto(
-            @RequestPart("producto") ProductoDTO productoDTO,
-            @RequestPart(value = "imagen", required = false) MultipartFile imagen) throws IOException {
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE) // C
+    @PreAuthorize("hasRole('ADMIN')") //Asigna el rol ADMIN para acceder a este endpoint
+    public ResponseEntity<?> crearProducto(  @RequestPart("producto") ProductoDTO productoDTO, @RequestPart(value = "imagen", required = false) MultipartFile imagen) 
+    // mediante de la anotación @RequestPart, se indica que se espera un objeto ProductoDTO y un archivo MultipartFile (imagen)
+            
+        throws IOException {
 
-        Producto producto = new Producto();
-        producto.setNombre(productoDTO.getNombre());
-        producto.setCodigo(productoDTO.getCodigo());
-        producto.setCategoria(productoDTO.getCategoria());
-        producto.setPrecio(productoDTO.getPrecio());
+        Producto producto = new Producto(); // crear un producto nuevo que recibe los datos del DTO
+        producto.setNombre(productoDTO.getNombre()); // se recupera el nombre que escribe el usuario en el 
+        //formulario y se guarda en el objeto producto
+
+        producto.setCodigo(productoDTO.getCodigo()); // se asigna el código del producto
+        producto.setCategoria(productoDTO.getCategoria()); // se asigna la categoría del producto
+        producto.setPrecio(productoDTO.getPrecio()); // metodo setPrecio para asignar el precio del producto
         producto.setStock(productoDTO.getStock());
         producto.setProveedor(productoDTO.getProveedor());
         producto.setPresentacion(productoDTO.getPresentacion());
         producto.setFechaVencimiento(productoDTO.getFechaVencimiento());
 
-        if (imagen != null && !imagen.isEmpty()) {
-            producto.setImagen(imagen.getBytes());
+        if (imagen != null && !imagen.isEmpty()) { // si recibe una imagen y no está vacía
+            producto.setImagen(imagen.getBytes());  // la imagen que se recupera se convierte a bytes y se asigna al producto
         }
 
-        Producto nuevo = productoService.crearProducto(producto);
-        return ResponseEntity.ok(nuevo);
+        Producto nuevo = productoService.crearProducto(producto); // llama al servicio de producto para crear un nuevo producto
+        return ResponseEntity.ok(nuevo); // devuelve una respuesta OK con el nuevo producto creado
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

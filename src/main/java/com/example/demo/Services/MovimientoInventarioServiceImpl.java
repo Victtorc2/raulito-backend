@@ -86,7 +86,7 @@ public class MovimientoInventarioServiceImpl implements MovimientoInventarioServ
             dto.setCantidad(m.getCantidad());
             dto.setUbicacion(m.getUbicacion());
             dto.setObservacion(m.getObservacion());
-            dto.setTipo(m.getTipo());
+            dto.setTipo(m.getTipo());    
             dto.setFecha(m.getFecha());
             return dto;
         }).collect(Collectors.toList());

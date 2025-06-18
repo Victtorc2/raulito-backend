@@ -33,35 +33,30 @@ public class SecurityConfig {
 @Bean
 public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
-        .cors()
-        .and()
-        .csrf(csrf -> csrf.disable())
-        .authorizeHttpRequests(auth -> auth
-    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-    .requestMatchers("/auth/login").permitAll()
-    .requestMatchers("/public/**").permitAll()
-    .requestMatchers("/api/productos/*/imagen").permitAll()  // <-- Primero esta
-                        .requestMatchers("/api/productos/**").hasAnyRole("EMPLEADO", "ADMIN")
-    .requestMatchers("/api/usuarios/**").hasRole("ADMIN")    // <-- Después esta más general
-    .requestMatchers("/api/inventario/**").hasAnyRole("ADMIN", "EMPLEADO")
-        .requestMatchers("/api/ventas/**").hasAnyRole("ADMIN", "EMPLEADO")
-
-    .anyRequest().authenticated()
-)
-
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .cors()
+            .and()
+            .csrf(csrf -> csrf.disable())  // Desactiva CSRF si no usas cookies de sesión
+            .authorizeHttpRequests(auth -> auth
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Primero permitir todas las OPTIONS (preflight)
+                    .requestMatchers("/auth/login").permitAll()  // Permitir acceso al login sin autenticación
+                    .requestMatchers("/public/**").permitAll()  // Permitir acceso a los recursos públicos
+                    .requestMatchers("/api/productos/*/imagen").permitAll()  // Permitir imágenes de productos sin autenticación
+                    .requestMatchers("/api/productos/**").hasAnyRole("EMPLEADO", "ADMIN")  // Solo EMPLEADO o ADMIN pueden acceder a productos
+                    .requestMatchers("/api/usuarios/**").hasRole("ADMIN")  // Solo ADMIN puede acceder a usuarios
+                    .requestMatchers("/api/inventario/**").hasAnyRole("ADMIN", "EMPLEADO")  // ADMIN y EMPLEADO pueden acceder a inventario
+                    .requestMatchers("/api/ventas/**").hasAnyRole("ADMIN", "EMPLEADO")  // ADMIN y EMPLEADO pueden acceder a ventas
+                    .anyRequest().authenticated())  // Cualquier otra solicitud debe estar autenticada
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  // Sin sesión (usamos JWT)
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);  // Filtro para JWT
     return http.build();
 }
-
-
 
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173")); // Asegúrate de que este es el puerto de tu frontend
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
@@ -75,8 +70,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     public AuthenticationManager authManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-
-    @Bean
+@Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
