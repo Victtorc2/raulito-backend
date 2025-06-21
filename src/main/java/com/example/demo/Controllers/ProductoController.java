@@ -2,7 +2,13 @@ package com.example.demo.Controllers;
 
 import com.example.demo.DTO.ProductoDTO;
 import com.example.demo.Models.Producto;
+import com.example.demo.Services.AuditoriaService;
 import com.example.demo.Services.ProductoService;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -15,99 +21,159 @@ import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.Optional;
-import java.io.IOException;
 
 @RestController
+@Slf4j // Requiere Lombok, o usa Logger manualmente
+
 @RequestMapping("/api/productos")
 public class ProductoController {
 
     @Autowired
     private ProductoService productoService;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
+    private AuditoriaService auditoriaService;
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Producto> obtenerProducto(@PathVariable Long id) {
+        log.debug("Solicitud GET para obtener producto con ID: {}", id);
         return productoService.obtenerProductoPorId(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .map(producto -> {
+                    log.debug("Producto encontrado: {}", producto.getNombre());
+                    return ResponseEntity.ok(producto);
+                })
+                .orElseGet(() -> {
+                    log.warn("Producto con ID {} no encontrado", id);
+                    return ResponseEntity.notFound().build();
+                });
     }
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE) // C
-    @PreAuthorize("hasRole('ADMIN')") //Asigna el rol ADMIN para acceder a este endpoint
-    public ResponseEntity<?> crearProducto(  @RequestPart("producto") ProductoDTO productoDTO, @RequestPart(value = "imagen", required = false) MultipartFile imagen) 
-    // mediante de la anotación @RequestPart, se indica que se espera un objeto ProductoDTO y un archivo MultipartFile (imagen)
-            
-        throws IOException {
+@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+@PreAuthorize("hasRole('ADMIN')")
+public ResponseEntity<?> crearProducto(
+        @RequestPart("producto") String productoJson,
+        @RequestPart(value = "imagen", required = false) MultipartFile imagen,
+        @RequestHeader("usuario") String usuario) {
+    try {
+        // Deserializamos el JSON que nos llega
+        ProductoDTO productoDTO = objectMapper.readValue(productoJson, ProductoDTO.class);
 
-        Producto producto = new Producto(); // crear un producto nuevo que recibe los datos del DTO
-        producto.setNombre(productoDTO.getNombre()); // se recupera el nombre que escribe el usuario en el 
-        //formulario y se guarda en el objeto producto
+        // Verificar el valor del precio que llega
+        log.debug("ProductoDTO recibido: {}", productoDTO); // Esto debería mostrar el precio correctamente
+        log.error("Precio recibido en el backend: {}", productoDTO.getPrecio()); // Log adicional para verificar
 
-        producto.setCodigo(productoDTO.getCodigo()); // se asigna el código del producto
-        producto.setCategoria(productoDTO.getCategoria()); // se asigna la categoría del producto
-        producto.setPrecio(productoDTO.getPrecio()); // metodo setPrecio para asignar el precio del producto
-        producto.setStock(productoDTO.getStock());
-        producto.setProveedor(productoDTO.getProveedor());
-        producto.setPresentacion(productoDTO.getPresentacion());
-        producto.setFechaVencimiento(productoDTO.getFechaVencimiento());
-
-        if (imagen != null && !imagen.isEmpty()) { // si recibe una imagen y no está vacía
-            producto.setImagen(imagen.getBytes());  // la imagen que se recupera se convierte a bytes y se asigna al producto
+        // Verificar que el precio esté presente y sea mayor que 0
+        if (productoDTO.getPrecio() == null || productoDTO.getPrecio() <= 0) {
+            log.error("El precio no puede ser nulo o menor que 0");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El precio es obligatorio y debe ser mayor que 0.");
         }
 
-        Producto nuevo = productoService.crearProducto(producto); // llama al servicio de producto para crear un nuevo producto
-        return ResponseEntity.ok(nuevo); // devuelve una respuesta OK con el nuevo producto creado
-    }
-
-    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> actualizarProductoConImagen(
-            @PathVariable Long id,
-            @RequestPart("producto") ProductoDTO productoDTO,
-            @RequestPart(value = "imagen", required = false) MultipartFile imagen) throws IOException {
-
-        Producto producto = productoService.obtenerProductoPorId(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
-
+        // Lógica para crear el producto
+        Producto producto = new Producto();
         producto.setNombre(productoDTO.getNombre());
         producto.setCodigo(productoDTO.getCodigo());
         producto.setCategoria(productoDTO.getCategoria());
         producto.setPrecio(productoDTO.getPrecio());
-
+        producto.setStock(productoDTO.getStock());
         producto.setProveedor(productoDTO.getProveedor());
         producto.setPresentacion(productoDTO.getPresentacion());
-        producto.setFechaVencimiento(productoDTO.getFechaVencimiento());
 
-        if (imagen != null && !imagen.isEmpty()) {
+        if (productoDTO.getFechaVencimiento() != null) {
+            producto.setFechaVencimiento(productoDTO.getFechaVencimiento());
+        }
+
+        if (imagen != null) {
             producto.setImagen(imagen.getBytes());
         }
 
-        Producto actualizado = productoService.actualizarProducto(id, producto);
-        return ResponseEntity.ok(actualizado);
+        Producto nuevoProducto = productoService.crearProducto(producto);
+        auditoriaService.registrarAuditoria(usuario, "productos", "crear", 
+                "Producto creado: " + producto.getNombre(), null, producto.toString());
+
+        return ResponseEntity.ok(nuevoProducto);
+    } catch (Exception e) {
+        log.error("Error al crear producto", e);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al crear producto: " + e.getMessage());
+    }
+}
+
+
+
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> actualizarProducto(
+            @PathVariable Long id,
+            @RequestPart("producto") String productoJson,
+            @RequestPart(value = "imagen", required = false) MultipartFile imagen,
+            @RequestHeader("usuario") String usuario) { // Usuario desde el header
+        try {
+            ProductoDTO productoDTO = objectMapper.readValue(productoJson, ProductoDTO.class);
+            Producto producto = productoService.obtenerProductoPorId(id)
+                    .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+            String valorAnterior = producto.toString();
+
+            producto.setNombre(productoDTO.getNombre());
+            // Actualizar más campos...
+
+            Producto actualizado = productoService.actualizarProducto(id, producto);
+
+            // Registrar auditoría
+            auditoriaService.registrarAuditoria(usuario, "productos", "actualizar", 
+                "Producto actualizado: " + producto.getNombre(), valorAnterior, producto.toString());
+
+            return ResponseEntity.ok(actualizado);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al actualizar producto: " + e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> eliminarProducto(@PathVariable Long id) {
-        productoService.eliminarProducto(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> eliminarProducto(@PathVariable Long id, @RequestHeader("usuario") String usuario) {
+        try {
+            Producto producto = productoService.obtenerProductoPorId(id)
+                    .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+            String valorAnterior = producto.toString();
+
+            productoService.eliminarProducto(id);
+
+            // Registrar auditoría
+            auditoriaService.registrarAuditoria(usuario, "productos", "eliminar", 
+                "Producto eliminado: " + producto.getNombre(), valorAnterior, null);
+
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    @GetMapping
 
-@PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
-public List<Producto> listarProductos(
-    @RequestParam(required = false) String nombre,
-    @RequestParam(required = false) String categoria,
-    @RequestParam(required = false) String codigo) {
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
+    public List<Producto> listarProductos(
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) String categoria,
+            @RequestParam(required = false) String codigo) {
+
+        log.debug("Solicitud para listar productos. Filtros - nombre: {}, categoria: {}, codigo: {}",
+                nombre, categoria, codigo);
 
         if (nombre != null) {
+            log.debug("Buscando por nombre: {}", nombre);
             return productoService.buscarPorNombre(nombre);
         } else if (categoria != null) {
+            log.debug("Buscando por categoría: {}", categoria);
             return productoService.buscarPorCategoria(categoria);
         } else if (codigo != null) {
+            log.debug("Buscando por código: {}", codigo);
             return productoService.buscarPorCodigo(codigo);
         } else {
+            log.debug("Listando todos los productos");
             return productoService.listarProductos();
         }
     }
@@ -115,28 +181,33 @@ public List<Producto> listarProductos(
     @GetMapping("/alertas/vencimiento")
     @PreAuthorize("hasRole('ADMIN')")
     public List<Producto> productosProximosAVencer(@RequestParam(defaultValue = "7") int dias) {
+        log.info("Buscando productos próximos a vencer en {} días", dias);
         return productoService.listarProductosProximosAVencer(dias);
     }
 
     @GetMapping("/alertas/stock-bajo")
     @PreAuthorize("hasRole('ADMIN')")
     public List<Producto> productosStockBajo(@RequestParam(defaultValue = "10") int stockMinimo) {
+        log.info("Buscando productos con stock bajo (menos de {} unidades)", stockMinimo);
         return productoService.listarProductosStockBajo(stockMinimo);
     }
 
-    // ✅ NUEVO: Endpoint para obtener imagen como recurso
     @GetMapping("/{id}/imagen")
     public ResponseEntity<byte[]> obtenerImagenProducto(@PathVariable Long id) {
+        log.debug("Solicitud para obtener imagen del producto con ID: {}", id);
         Optional<Producto> productoOpt = productoService.obtenerProductoPorId(id);
 
         if (productoOpt.isEmpty() || productoOpt.get().getImagen() == null) {
+            log.warn("Imagen no encontrada para el producto con ID: {}", id);
             return ResponseEntity.notFound().build();
         }
 
         byte[] imagenBytes = productoOpt.get().getImagen();
+        log.debug("Devolviendo imagen para producto ID: {}. Tamaño: {} bytes", id, imagenBytes.length);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.IMAGE_JPEG);
+        headers.setContentType(MediaType.IMAGE_JPEG); // Asegúrate de que la imagen esté en formato JPEG
         return new ResponseEntity<>(imagenBytes, headers, HttpStatus.OK);
     }
+
 }

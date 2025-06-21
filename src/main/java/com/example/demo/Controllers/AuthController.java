@@ -22,40 +22,42 @@ import org.slf4j.LoggerFactory;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-public class AuthController { // Controlador para manejar la autenticación de usuarios
+public class AuthController {
 
-    private static final Logger logger = LoggerFactory.getLogger(AuthController.class); //esta línea crea un logger para registrar eventos en el controlador 
-    private final UsuarioService usuarioService;  // Inyecta UsuarioService correctamente
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+    
+    private final UsuarioService usuarioService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
+    private final CustomUserDetailsService userDetailsService;
+    private final AuditoriaService auditoriaService; // Inyectamos el servicio de auditoría
 
-    private final AuthenticationManager authenticationManager; // Inyecta AuthenticationManager para manejar la autenticación
-    private final JwtService jwtService; // Inyecta JwtService para generar tokens JWT
-    private final CustomUserDetailsService userDetailsService; // Inyecta CustomUserDetailsService para cargar detalles del usuario
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
+        try {
+            authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getCorreo(), request.getPassword()));
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
+        UserDetails userDetails = userDetailsService.loadUserByUsername(request.getCorreo());
+        Usuario usuario = usuarioService.obtenerPorCorreo(request.getCorreo())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-    // Método para manejar la solicitud de inicio de sesión
+        String token = jwtService.generateToken(userDetails, usuario);
 
-  @PostMapping("/login")
-public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
-    try {
-        authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(request.getCorreo(), request.getPassword()));
-    } catch (BadCredentialsException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
+        // Registrar auditoría del inicio de sesión
+        auditoriaService.registrarAuditoria(request.getCorreo(), "auth", "login", 
+            "Inicio de sesión exitoso", null, "Token generado");
 
-    UserDetails userDetails = userDetailsService.loadUserByUsername(request.getCorreo());
-    Usuario usuario = usuarioService.obtenerPorCorreo(request.getCorreo())
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-    String token = jwtService.generateToken(userDetails, usuario);
-
-    // Modificación clave: Remover ROLE_ del rol devuelto
-    String role = userDetails.getAuthorities().stream()
+        // Modificación clave: Remover ROLE_ del rol devuelto
+        String role = userDetails.getAuthorities().stream()
             .findFirst()
             .map(GrantedAuthority::getAuthority)
-            .map(authority -> authority.replace("ROLE_", "")) // Remueve ROLE_
+            .map(authority -> authority.replace("ROLE_", ""))
             .orElse("");
 
-    return ResponseEntity.ok(new AuthResponse(token, role));
-}
+        return ResponseEntity.ok(new AuthResponse(token, role));
+    }
 }

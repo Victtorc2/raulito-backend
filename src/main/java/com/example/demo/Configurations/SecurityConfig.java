@@ -41,8 +41,10 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                     .requestMatchers("/auth/login").permitAll()  // Permitir acceso al login sin autenticación
                     .requestMatchers("/public/**").permitAll()  // Permitir acceso a los recursos públicos
                     .requestMatchers("/api/productos/*/imagen").permitAll()  // Permitir imágenes de productos sin autenticación
-                    .requestMatchers("/api/productos/**").hasAnyRole("EMPLEADO", "ADMIN")  // Solo EMPLEADO o ADMIN pueden acceder a productos
+                    .requestMatchers("/api/productos/**").hasRole("ADMIN")  // Solo EMPLEADO o ADMIN pueden acceder a productos
                     .requestMatchers("/api/usuarios/**").hasRole("ADMIN")  // Solo ADMIN puede acceder a usuarios
+                                        .requestMatchers("/api/auditoria/**").hasRole("ADMIN")  // Solo ADMIN puede acceder a usuarios
+
                     .requestMatchers("/api/inventario/**").hasAnyRole("ADMIN", "EMPLEADO")  // ADMIN y EMPLEADO pueden acceder a inventario
                     .requestMatchers("/api/ventas/**").hasAnyRole("ADMIN", "EMPLEADO")  // ADMIN y EMPLEADO pueden acceder a ventas
                     .anyRequest().authenticated())  // Cualquier otra solicitud debe estar autenticada

@@ -3,6 +3,7 @@ package com.example.demo.DTO;
 
 import java.time.LocalDate;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,5 +19,6 @@ public class ProductoDTO {
     private int stock;
     private String proveedor;
     private String presentacion;
-    private LocalDate fechaVencimiento;
+          private LocalDate fechaVencimiento;  // Asegúrate de que sea LocalDate
+
 }

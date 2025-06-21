@@ -12,6 +12,7 @@ import com.example.demo.DTO.VentaDiariaDTO;
 import com.example.demo.DTO.VentaMensualDTO;
 import com.example.demo.DTO.VentaRequestDTO;
 import com.example.demo.DTO.VentaResponseDTO;
+import com.example.demo.Services.AuditoriaService;
 import com.example.demo.Services.VentaService;
 
 @RestController
@@ -20,14 +21,24 @@ public class VentaController {
 
     @Autowired
     private VentaService ventaService;
+    @Autowired
+    private AuditoriaService auditoriaService;
 
-    @PostMapping
+ @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
-    public ResponseEntity<VentaResponseDTO> registrarVenta(@RequestBody VentaRequestDTO ventaDTO) {
+    public ResponseEntity<VentaResponseDTO> registrarVenta(
+            @RequestBody VentaRequestDTO ventaDTO,
+            @RequestHeader("usuario") String usuario) { // Usuario desde el header
+
+        // Registrar la venta
         VentaResponseDTO nuevaVenta = ventaService.registrarVenta(ventaDTO);
+
+        // Registrar la auditoría de la venta
+        auditoriaService.registrarAuditoria(usuario, "ventas", "registrar",
+                "Venta registrada. Monto: " + nuevaVenta.getTotal(), null, ventaDTO.toString());
+
         return ResponseEntity.ok(nuevaVenta);
     }
-
     @GetMapping("/historial")
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<List<VentaResponseDTO>> obtenerHistorial() {
