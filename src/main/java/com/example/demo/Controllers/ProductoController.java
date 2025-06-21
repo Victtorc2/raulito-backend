@@ -1,26 +1,33 @@
 package com.example.demo.Controllers;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.example.demo.DTO.ProductoDTO;
 import com.example.demo.Models.Producto;
 import com.example.demo.Services.AuditoriaService;
 import com.example.demo.Services.ProductoService;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-
-import java.util.List;
-import java.util.Optional;
 
 @RestController
 @Slf4j // Requiere Lombok, o usa Logger manualmente
@@ -56,21 +63,22 @@ public ResponseEntity<?> crearProducto(
         @RequestPart("producto") String productoJson,
         @RequestPart(value = "imagen", required = false) MultipartFile imagen,
         @RequestHeader("usuario") String usuario) {
+
     try {
-        // Deserializamos el JSON que nos llega
+        // Deserializamos el JSON recibido como texto
         ProductoDTO productoDTO = objectMapper.readValue(productoJson, ProductoDTO.class);
 
-        // Verificar el valor del precio que llega
-        log.debug("ProductoDTO recibido: {}", productoDTO); // Esto debería mostrar el precio correctamente
-        log.error("Precio recibido en el backend: {}", productoDTO.getPrecio()); // Log adicional para verificar
+        log.debug("ProductoDTO recibido: {}", productoDTO);
+        log.debug("Precio recibido en el backend: {}", productoDTO.getPrecio());
 
-        // Verificar que el precio esté presente y sea mayor que 0
+        // Validación del precio
         if (productoDTO.getPrecio() == null || productoDTO.getPrecio() <= 0) {
             log.error("El precio no puede ser nulo o menor que 0");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El precio es obligatorio y debe ser mayor que 0.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("El precio es obligatorio y debe ser mayor que 0.");
         }
 
-        // Lógica para crear el producto
+        // Crear objeto Producto a partir del DTO
         Producto producto = new Producto();
         producto.setNombre(productoDTO.getNombre());
         producto.setCodigo(productoDTO.getCodigo());
@@ -88,14 +96,25 @@ public ResponseEntity<?> crearProducto(
             producto.setImagen(imagen.getBytes());
         }
 
+        // Guardar producto en la base de datos
         Producto nuevoProducto = productoService.crearProducto(producto);
-        auditoriaService.registrarAuditoria(usuario, "productos", "crear", 
-                "Producto creado: " + producto.getNombre(), null, producto.toString());
+
+        // Registrar auditoría sin el campo "imagen"
+        auditoriaService.registrarAuditoria(
+                usuario,
+                "productos",
+                "crear",
+                "Producto creado: " + producto.getNombre(),
+                null,
+                nuevoProducto
+        );
 
         return ResponseEntity.ok(nuevoProducto);
+
     } catch (Exception e) {
         log.error("Error al crear producto", e);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al crear producto: " + e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("Error al crear producto: " + e.getMessage());
     }
 }
 

@@ -1,23 +1,28 @@
 package com.example.demo.Controllers;
 
-import lombok.RequiredArgsConstructor;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails; 
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.DTO.AuthRequest;
 import com.example.demo.DTO.AuthResponse;
 import com.example.demo.Models.Usuario;
-import com.example.demo.Services.*;
+import com.example.demo.Services.AuditoriaService;
+import com.example.demo.Services.CustomUserDetailsService;
+import com.example.demo.Services.JwtService;
+import com.example.demo.Services.UsuarioService;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/auth")
@@ -58,6 +63,6 @@ public class AuthController {
             .map(authority -> authority.replace("ROLE_", ""))
             .orElse("");
 
-        return ResponseEntity.ok(new AuthResponse(token, role));
+return ResponseEntity.ok(new AuthResponse(token, role, usuario.getCorreo()));
     }
 }

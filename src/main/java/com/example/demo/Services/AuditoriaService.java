@@ -1,41 +1,58 @@
 package com.example.demo.Services;
 
+import java.time.LocalDateTime;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.Models.Auditoria;
 import com.example.demo.Repositories.AuditoriaRepository;
-
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 
 @Service
-public class AuditoriaService { 
+public class AuditoriaService {
 
     @Autowired
     private AuditoriaRepository auditoriaRepository;
 
-    /**
-     * Registra un evento de auditoría en la base de datos.
-     *
-     * @param usuario       El usuario que realizó la acción
-     * @param modulo        El módulo donde ocurrió la acción (productos, ventas, movimientos)
-     * @param accion        El tipo de acción realizada (crear, actualizar, eliminar, etc.)
-     * @param descripcion   Descripción de la acción realizada
-     * @param valorAnterior Valor anterior antes de la acción (si aplica)
-     * @param valorNuevo    Valor nuevo después de la acción (si aplica)
-     */
-    public void registrarAuditoria(String usuario, String modulo, String accion, String descripcion, String valorAnterior, String valorNuevo) {
-        // Crear una nueva instancia de Auditoria con los datos proporcionados
-        Auditoria auditoria = new Auditoria();
-        auditoria.setUsuario(usuario);
-        auditoria.setModulo(modulo);
-        auditoria.setAccion(accion);
-        auditoria.setDescripcion(descripcion);
-        auditoria.setFechaHora(LocalDateTime.now());
-        auditoria.setValorAnterior(valorAnterior);
-        auditoria.setValorNuevo(valorNuevo);
+    @Autowired
+    private ObjectMapper objectMapper;
 
-        // Guardar el registro de auditoría en la base de datos
-        auditoriaRepository.save(auditoria);
+    public void registrarAuditoria(String usuario, String modulo, String accion,
+                                   String descripcion, Object valorAnterior, Object valorNuevo) {
+        try {
+            SimpleFilterProvider filters = new SimpleFilterProvider()
+                    .addFilter("productoFilter", SimpleBeanPropertyFilter.serializeAllExcept("imagen"));
+
+            String nuevo = valorNuevo != null
+                    ? objectMapper.writer(filters).writeValueAsString(valorNuevo)
+                    : null;
+
+            String anterior = valorAnterior != null
+                    ? objectMapper.writer(filters).writeValueAsString(valorAnterior)
+                    : null;
+
+            Auditoria auditoria = new Auditoria();
+            auditoria.setUsuario(usuario);
+            auditoria.setModulo(modulo);
+            auditoria.setAccion(accion);
+            auditoria.setDescripcion(descripcion);
+            auditoria.setFechaHora(LocalDateTime.now());
+            auditoria.setValorAnterior(anterior);
+            auditoria.setValorNuevo(nuevo);
+
+            auditoriaRepository.save(auditoria);
+        } catch (Exception e) {
+            // En caso de error al serializar, guardar sin valores para evitar caída
+            Auditoria auditoria = new Auditoria();
+            auditoria.setUsuario(usuario);
+            auditoria.setModulo(modulo);
+            auditoria.setAccion(accion);
+            auditoria.setDescripcion("ERROR al serializar datos de auditoría: " + e.getMessage());
+            auditoria.setFechaHora(LocalDateTime.now());
+            auditoriaRepository.save(auditoria);
+        }
     }
 }

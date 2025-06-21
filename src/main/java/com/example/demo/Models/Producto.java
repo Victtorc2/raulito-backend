@@ -4,16 +4,15 @@ import java.time.LocalDate; //atributo de tipo LocalDate para fechas
 
 import org.springframework.format.annotation.DateTimeFormat; //para formatear la fecha
 
-
-//mapean la clase a una tabla de la base de datos
-import jakarta.persistence.Column; //importa la clase Column de JPA
-import jakarta.persistence.Entity; //importa la clase Entity de JPA
-import jakarta.persistence.GeneratedValue; //importa la clase GeneratedValue de JPA
-import jakarta.persistence.GenerationType; //importa la clase GenerationType de JPA
-import jakarta.persistence.Id; //importa la clase Id de JPA
-import lombok.AllArgsConstructor; //genera constructor con todos los atributos
-import lombok.Data; //genera getters y setters
-import lombok.NoArgsConstructor; //genera constructor sin atributos
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity; //importa la clase Column de JPA
+import jakarta.persistence.GeneratedValue; //importa la clase Entity de JPA
+import jakarta.persistence.GenerationType; //importa la clase GeneratedValue de JPA
+import jakarta.persistence.Id; //importa la clase GenerationType de JPA
+import jakarta.persistence.Lob; //importa la clase Id de JPA
+import lombok.AllArgsConstructor;
+import lombok.Data; //genera constructor con todos los atributos
+import lombok.NoArgsConstructor; //genera getters y setters
 
 @Entity //es una entidad de JPA
 @Data //genera getters y setters
@@ -38,8 +37,9 @@ public class Producto {  //es una entidad de JPA
 
     private String proveedor;
     private String presentacion;
+@Lob
 
-    @Column(name = "imagen")
+@Column(name = "imagen", columnDefinition = "LONGBLOB")
     private byte[] imagen;
     private String imagenUrl;
 

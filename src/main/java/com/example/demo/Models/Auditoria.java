@@ -2,6 +2,8 @@ package com.example.demo.Models;
 
 
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -10,8 +12,6 @@ import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
@@ -30,10 +30,10 @@ public class Auditoria {
     private String descripcion; // Descripción de la acción realizada
     private LocalDateTime fechaHora; // Fecha y hora de la acción
     
-    @Column(columnDefinition = "TEXT")
+@Column(columnDefinition = "LONGTEXT")
     private String valorAnterior; // Valor anterior antes de la acción
 
-    @Column(columnDefinition = "TEXT")
+@Column(columnDefinition = "LONGTEXT")
     private String valorNuevo; // Valor nuevo después de la acción
 
 
