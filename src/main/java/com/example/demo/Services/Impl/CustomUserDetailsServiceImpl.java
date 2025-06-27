@@ -1,23 +1,24 @@
-package com.example.demo.Services;
+package com.example.demo.Services.Impl;
 
-import lombok.RequiredArgsConstructor;
+import com.example.demo.Models.Usuario;
+import com.example.demo.Repositories.UsuarioRepository;
+import com.example.demo.Services.ICustomUserDetailsService;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.stream.Collectors;
 
-import com.example.demo.Models.Usuario;
-import com.example.demo.Repositories.UsuarioRepository;
-
 @Service
-@RequiredArgsConstructor
-public class CustomUserDetailsService implements UserDetailsService {
+public class CustomUserDetailsServiceImpl implements ICustomUserDetailsService {
 
     private final UsuarioRepository usuarioRepository;
+
+    public CustomUserDetailsServiceImpl(UsuarioRepository usuarioRepository) {
+        this.usuarioRepository = usuarioRepository;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String correo) throws UsernameNotFoundException {

@@ -1,4 +1,4 @@
-package com.example.demo.DTO;
+package com.example.demo.DTO.Auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,7 +7,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class AuthResponse {
     private String token;
-        private String role;
+    private String role;
     private String correo;
 
 }

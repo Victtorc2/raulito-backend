@@ -1,35 +1,30 @@
 package com.example.demo.Controllers;
 
-import java.util.List;
+import com.example.demo.Models.Auditoria;
+import com.example.demo.Services.IAuditoriaService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.example.demo.Models.Auditoria;
-import com.example.demo.Repositories.AuditoriaRepository;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/auditoria")
 public class AuditoriaController {
 
     @Autowired
-    private AuditoriaRepository auditoriaRepository;
+    private IAuditoriaService auditoriaService;
 
     @GetMapping
     public ResponseEntity<List<Auditoria>> obtenerRegistrosAuditoria() {
-        List<Auditoria> registros = auditoriaRepository.findAll();
-        return ResponseEntity.ok(registros);
+        return ResponseEntity.ok(auditoriaService.obtenerTodos());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Auditoria> obtenerRegistroAuditoriaPorId(@PathVariable Long id) {
-        return auditoriaRepository.findById(id)
-                .map(auditoria -> ResponseEntity.ok(auditoria))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return auditoriaService.obtenerPorId(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }
-

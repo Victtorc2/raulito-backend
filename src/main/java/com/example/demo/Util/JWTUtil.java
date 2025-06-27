@@ -1,4 +1,4 @@
-package com.example.demo.Services;
+package com.example.demo.Util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -21,7 +21,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-public class JwtService {
+public class JWTUtil {
 
     @Value("${jwt.secret}")
     private String secretKeyString;
@@ -46,19 +46,18 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
-   public String generateToken(UserDetails userDetails, Usuario usuario) {  // Recibe entidad Usuario
-    Map<String, Object> claims = new HashMap<>();
-    claims.put("authorities", userDetails.getAuthorities());
-    claims.put("userId", usuario.getId());  // Añade userId al token
-    return Jwts.builder()
-            .setClaims(claims)
-            .setSubject(userDetails.getUsername())  // correo
-            .setIssuedAt(new Date(System.currentTimeMillis()))
-            .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
-            .signWith(secretKey, SignatureAlgorithm.HS256)
-            .compact();
-}
-
+    public String generateToken(UserDetails userDetails, Usuario usuario) { // Recibe entidad Usuario
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("authorities", userDetails.getAuthorities());
+        claims.put("userId", usuario.getId());
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(userDetails.getUsername()) // correo
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
+                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .compact();
+    }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);

@@ -1,4 +1,4 @@
-package com.example.demo.Services;
+package com.example.demo.Services.Impl;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -7,13 +7,14 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.DTO.MovimientoInventarioDTO;
-import com.example.demo.DTO.MovimientoInventarioResponseDTO;
+import com.example.demo.DTO.MovimientoInventario.MovimientoInventarioRequest;
+import com.example.demo.DTO.MovimientoInventario.MovimientoInventarioResponse;
 import com.example.demo.Models.MovimientoInventario;
 import com.example.demo.Models.Producto;
 import com.example.demo.Models.TipoMovimiento;
 import com.example.demo.Repositories.MovimientoInventarioRepository;
 import com.example.demo.Repositories.ProductoRepository;
+import com.example.demo.Services.IMovimientoInventarioService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,13 +22,13 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 
 @RequiredArgsConstructor
-public class MovimientoInventarioServiceImpl implements MovimientoInventarioService {
+public class MovimientoInventarioServiceImpl implements IMovimientoInventarioService {
 
     private final MovimientoInventarioRepository movimientoRepo;
     private final ProductoRepository productoRepo;
 
     @Override
-    public MovimientoInventarioResponseDTO registrarMovimiento(MovimientoInventarioDTO dto) {
+    public MovimientoInventarioResponse registrarMovimiento(MovimientoInventarioRequest dto) {
         Producto producto = productoRepo.findById(dto.getProductoId())
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
@@ -63,7 +64,7 @@ public class MovimientoInventarioServiceImpl implements MovimientoInventarioServ
 
         MovimientoInventario guardado = movimientoRepo.save(movimiento);
 
-        MovimientoInventarioResponseDTO response = new MovimientoInventarioResponseDTO();
+        MovimientoInventarioResponse response = new MovimientoInventarioResponse();
         response.setProductoNombre(producto.getNombre());
         response.setPrecio(producto.getPrecio());
         response.setCategoria(producto.getCategoria());
@@ -77,27 +78,27 @@ public class MovimientoInventarioServiceImpl implements MovimientoInventarioServ
     }
 
     @Override
-    public List<MovimientoInventarioResponseDTO> listarMovimientos() {
+    public List<MovimientoInventarioResponse> listarMovimientos() {
         return movimientoRepo.findAll().stream().map(m -> {
-            MovimientoInventarioResponseDTO dto = new MovimientoInventarioResponseDTO();
+            MovimientoInventarioResponse dto = new MovimientoInventarioResponse();
             dto.setProductoNombre(m.getProducto().getNombre());
             dto.setCategoria(m.getProducto().getCategoria());
             dto.setPrecio(m.getProducto().getPrecio());
             dto.setCantidad(m.getCantidad());
             dto.setUbicacion(m.getUbicacion());
             dto.setObservacion(m.getObservacion());
-            dto.setTipo(m.getTipo());    
+            dto.setTipo(m.getTipo());
             dto.setFecha(m.getFecha());
             return dto;
         }).collect(Collectors.toList());
     }
 
     @Override
-    public List<MovimientoInventarioResponseDTO> filtrarPorCategoria(String categoria) {
+    public List<MovimientoInventarioResponse> filtrarPorCategoria(String categoria) {
         return movimientoRepo.findAll().stream()
                 .filter(m -> m.getProducto().getCategoria().equalsIgnoreCase(categoria))
                 .map(m -> {
-                    MovimientoInventarioResponseDTO dto = new MovimientoInventarioResponseDTO();
+                    MovimientoInventarioResponse dto = new MovimientoInventarioResponse();
                     dto.setProductoNombre(m.getProducto().getNombre());
                     dto.setPrecio(m.getProducto().getPrecio());
                     dto.setCategoria(m.getProducto().getCategoria());
@@ -129,11 +130,11 @@ public class MovimientoInventarioServiceImpl implements MovimientoInventarioServ
     }
 
     @Override
-    public List<MovimientoInventarioResponseDTO> filtrarPorTipo(TipoMovimiento tipo) {
+    public List<MovimientoInventarioResponse> filtrarPorTipo(TipoMovimiento tipo) {
         return movimientoRepo.findAll().stream()
                 .filter(m -> m.getTipo() == tipo)
                 .map(m -> {
-                    MovimientoInventarioResponseDTO dto = new MovimientoInventarioResponseDTO();
+                    MovimientoInventarioResponse dto = new MovimientoInventarioResponse();
                     dto.setProductoNombre(m.getProducto().getNombre());
                     dto.setCategoria(m.getProducto().getCategoria());
                     dto.setPrecio(m.getProducto().getPrecio());

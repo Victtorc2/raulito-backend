@@ -1,16 +1,15 @@
-package com.example.demo.DTO;
-
+package com.example.demo.DTO.Producto;
 
 import java.time.LocalDate;
-
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class ProductoDTO {
+public class ProductoRequest {
     private Long id;
     private String nombre;
     private String codigo;
@@ -19,6 +18,6 @@ public class ProductoDTO {
     private int stock;
     private String proveedor;
     private String presentacion;
-          private LocalDate fechaVencimiento;  // Asegúrate de que sea LocalDate
+    private LocalDate fechaVencimiento;
 
 }

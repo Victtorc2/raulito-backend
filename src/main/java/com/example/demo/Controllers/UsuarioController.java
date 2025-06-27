@@ -1,7 +1,7 @@
 package com.example.demo.Controllers;
 
 import com.example.demo.Models.Usuario;
-import com.example.demo.Services.UsuarioService;
+import com.example.demo.Services.IUsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +14,7 @@ import java.util.Optional;
 public class UsuarioController {
 
     @Autowired
-    private UsuarioService usuarioService;
+    private IUsuarioService usuarioService;
 
     @GetMapping
     public ResponseEntity<List<Usuario>> listarUsuarios() {
@@ -25,7 +25,7 @@ public class UsuarioController {
     public ResponseEntity<Usuario> obtenerPorId(@PathVariable Long id) {
         Optional<Usuario> usuario = usuarioService.obtenerPorId(id);
         return usuario.map(ResponseEntity::ok)
-                      .orElse(ResponseEntity.notFound().build());
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping

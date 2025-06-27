@@ -1,4 +1,4 @@
-package com.example.demo.DTO;
+package com.example.demo.DTO.Venta;
 
 
 import java.time.LocalDate;
@@ -8,7 +8,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class VentaResponseDTO {
+public class VentaResponse {
     private Long id;
     private LocalDate fecha;
     private LocalTime hora;

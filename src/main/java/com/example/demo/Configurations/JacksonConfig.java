@@ -12,8 +12,9 @@ public class JacksonConfig {
     @Bean
     public ObjectMapper objectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());  // Registra el módulo para manejar LocalDate
-        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);  // Desactiva el manejo de fechas como timestamps
+        objectMapper.registerModule(new JavaTimeModule()); // Registra el módulo para manejar LocalDate
+        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false); // Desactiva el manejo de fechas
+                                                                                       // como timestamps
         return objectMapper;
     }
 }

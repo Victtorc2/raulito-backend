@@ -1,10 +1,10 @@
-package com.example.demo.DTO;
+package com.example.demo.DTO.Venta;
 
 import lombok.Data;
 import java.util.List;
 
 @Data
-public class VentaRequestDTO {
+public class VentaRequest {
     private Long usuarioId;
     private List<ItemVentaDTO> detalles;
     private String metodoPago;

@@ -1,18 +1,20 @@
-package com.example.demo.Services;
-
-import java.time.LocalDateTime;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+package com.example.demo.Services.Impl;
 
 import com.example.demo.Models.Auditoria;
 import com.example.demo.Repositories.AuditoriaRepository;
+import com.example.demo.Services.IAuditoriaService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 @Service
-public class AuditoriaService {
+public class AuditoriaServiceImpl implements IAuditoriaService {
 
     @Autowired
     private AuditoriaRepository auditoriaRepository;
@@ -20,8 +22,9 @@ public class AuditoriaService {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Override
     public void registrarAuditoria(String usuario, String modulo, String accion,
-                                   String descripcion, Object valorAnterior, Object valorNuevo) {
+            String descripcion, Object valorAnterior, Object valorNuevo) {
         try {
             SimpleFilterProvider filters = new SimpleFilterProvider()
                     .addFilter("productoFilter", SimpleBeanPropertyFilter.serializeAllExcept("imagen"));
@@ -45,7 +48,6 @@ public class AuditoriaService {
 
             auditoriaRepository.save(auditoria);
         } catch (Exception e) {
-            // En caso de error al serializar, guardar sin valores para evitar caída
             Auditoria auditoria = new Auditoria();
             auditoria.setUsuario(usuario);
             auditoria.setModulo(modulo);
@@ -54,5 +56,15 @@ public class AuditoriaService {
             auditoria.setFechaHora(LocalDateTime.now());
             auditoriaRepository.save(auditoria);
         }
+    }
+
+    @Override
+    public List<Auditoria> obtenerTodos() {
+        return auditoriaRepository.findAll();
+    }
+
+    @Override
+    public Optional<Auditoria> obtenerPorId(Long id) {
+        return auditoriaRepository.findById(id);
     }
 }

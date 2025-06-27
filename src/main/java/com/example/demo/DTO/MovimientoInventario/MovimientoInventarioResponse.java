@@ -1,4 +1,4 @@
-package com.example.demo.DTO;
+package com.example.demo.DTO.MovimientoInventario;
 
 
 import java.time.LocalDate;
@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 
-public class MovimientoInventarioResponseDTO {
+public class MovimientoInventarioResponse {
     private String productoNombre; 
     private Double precio;
 

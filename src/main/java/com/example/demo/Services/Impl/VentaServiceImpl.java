@@ -1,8 +1,16 @@
-package com.example.demo.Services;
+package com.example.demo.Services.Impl;
 
-import com.example.demo.DTO.*;
+import com.example.demo.DTO.Producto.EstadisticasProductosResponse;
+import com.example.demo.DTO.Venta.DetalleVentaDTO;
+import com.example.demo.DTO.Venta.EstadisticasVentaDTO;
+import com.example.demo.DTO.Venta.ItemVentaDTO;
+import com.example.demo.DTO.Venta.VentaDiariaDTO;
+import com.example.demo.DTO.Venta.VentaMensualDTO;
+import com.example.demo.DTO.Venta.VentaRequest;
+import com.example.demo.DTO.Venta.VentaResponse;
 import com.example.demo.Models.*;
 import com.example.demo.Repositories.*;
+import com.example.demo.Services.IVentaService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,78 +22,76 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-public class VentaServiceImpl implements VentaService {
+public class VentaServiceImpl implements IVentaService {
 
     private final VentaRepository ventaRepository;
     private final ProductoRepository productoRepository;
     private final UsuarioRepository usuarioRepository;
     private final MovimientoInventarioRepository movimientoRepo;
 
-    
     @Override
-@Transactional
-public VentaResponseDTO registrarVenta(VentaRequestDTO ventaDTO) {
-    if (ventaDTO.getUsuarioId() == null) {
-        throw new IllegalArgumentException("El id del usuario no puede ser null");
-    }
-    Usuario usuario = usuarioRepository.findById(ventaDTO.getUsuarioId())
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    @Transactional
+    public VentaResponse registrarVenta(VentaRequest ventaDTO) {
+        if (ventaDTO.getUsuarioId() == null) {
+            throw new IllegalArgumentException("El id del usuario no puede ser null");
+        }
+        Usuario usuario = usuarioRepository.findById(ventaDTO.getUsuarioId())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-    Venta venta = new Venta();
-    venta.setFecha(LocalDateTime.now());
-    venta.setUsuario(usuario);
-    venta.setMetodoPago(ventaDTO.getMetodoPago());
+        Venta venta = new Venta();
+        venta.setFecha(LocalDateTime.now());
+        venta.setUsuario(usuario);
+        venta.setMetodoPago(ventaDTO.getMetodoPago());
 
-    List<DetalleVenta> detalles = new ArrayList<>();
-    double total = 0;
+        List<DetalleVenta> detalles = new ArrayList<>();
+        double total = 0;
 
-    for (ItemVentaDTO item : ventaDTO.getDetalles()) {
-        Producto producto = productoRepository.findById(item.getProductoId())
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+        for (ItemVentaDTO item : ventaDTO.getDetalles()) {
+            Producto producto = productoRepository.findById(item.getProductoId())
+                    .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
-        if (producto.getStock() < item.getCantidad()) {
-            throw new RuntimeException("Stock insuficiente para el producto: " + producto.getNombre());
+            if (producto.getStock() < item.getCantidad()) {
+                throw new RuntimeException("Stock insuficiente para el producto: " + producto.getNombre());
+            }
+
+            double precio = producto.getPrecio();
+            double subtotal = precio * item.getCantidad();
+            total += subtotal;
+
+            producto.setStock(producto.getStock() - item.getCantidad());
+            productoRepository.save(producto);
+
+            DetalleVenta detalle = new DetalleVenta();
+            detalle.setVenta(venta);
+            detalle.setProducto(producto);
+            detalle.setCantidad(item.getCantidad());
+            detalle.setPrecioUnitario(precio);
+            detalle.setSubtotal(subtotal);
+
+            detalles.add(detalle);
+
+            MovimientoInventario movimiento = new MovimientoInventario();
+            movimiento.setProducto(producto);
+            movimiento.setCantidad(item.getCantidad());
+            movimiento.setUbicacion("VENTA");
+            movimiento.setObservacion("Salida por venta realizada por: " + usuario.getCorreo());
+            movimiento.setTipo(TipoMovimiento.SALIDA);
+            movimiento.setFecha(LocalDate.now());
+            movimiento.setPrecio(precio);
+
+            movimientoRepo.save(movimiento);
         }
 
-        double precio = producto.getPrecio();
-        double subtotal = precio * item.getCantidad();
-        total += subtotal;
+        venta.setTotal(total);
+        venta.setDetalles(detalles);
 
-        producto.setStock(producto.getStock() - item.getCantidad());
-        productoRepository.save(producto);
+        Venta ventaGuardada = ventaRepository.save(venta);
 
-        DetalleVenta detalle = new DetalleVenta();
-        detalle.setVenta(venta);
-        detalle.setProducto(producto);
-        detalle.setCantidad(item.getCantidad());
-        detalle.setPrecioUnitario(precio);
-        detalle.setSubtotal(subtotal);
-
-        detalles.add(detalle);
-
-        MovimientoInventario movimiento = new MovimientoInventario();
-        movimiento.setProducto(producto);
-        movimiento.setCantidad(item.getCantidad());
-        movimiento.setUbicacion("VENTA");
-        movimiento.setObservacion("Salida por venta realizada por: " + usuario.getCorreo());
-        movimiento.setTipo(TipoMovimiento.SALIDA);
-        movimiento.setFecha(LocalDate.now());
-        movimiento.setPrecio(precio);
-
-        movimientoRepo.save(movimiento);
+        return mapToResponseDTO(ventaGuardada);
     }
 
-    venta.setTotal(total);
-    venta.setDetalles(detalles);
-
-    Venta ventaGuardada = ventaRepository.save(venta);
-
-    return mapToResponseDTO(ventaGuardada);
-}
-
-
-    private VentaResponseDTO mapToResponseDTO(Venta venta) {
-        VentaResponseDTO dto = new VentaResponseDTO();
+    private VentaResponse mapToResponseDTO(Venta venta) {
+        VentaResponse dto = new VentaResponse();
         dto.setId(venta.getId());
         dto.setFecha(venta.getFecha().toLocalDate());
         dto.setHora(venta.getFecha().toLocalTime());
@@ -124,8 +130,8 @@ public VentaResponseDTO registrarVenta(VentaRequestDTO ventaDTO) {
         }
         dto.setVentasPorMetodoPago(metodoMap);
 
-        List<ProductoEstadisticaDTO> productos = ventaRepository.productosMasVendidos().stream()
-                .map(row -> new ProductoEstadisticaDTO(
+        List<EstadisticasProductosResponse> productos = ventaRepository.productosMasVendidos().stream()
+                .map(row -> new EstadisticasProductosResponse(
                         (String) row[0],
                         ((Number) row[1]).longValue(),
                         ((Number) row[2]).doubleValue()))
@@ -136,7 +142,7 @@ public VentaResponseDTO registrarVenta(VentaRequestDTO ventaDTO) {
     }
 
     @Override
-    public List<VentaResponseDTO> obtenerTodasLasVentas() {
+    public List<VentaResponse> obtenerTodasLasVentas() {
         List<Venta> ventas = ventaRepository.findAllByOrderByFechaDesc();
         return ventas.stream().map(this::mapToResponseDTO).toList();
     }

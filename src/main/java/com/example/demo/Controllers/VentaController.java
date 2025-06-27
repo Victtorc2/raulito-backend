@@ -7,42 +7,41 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.demo.DTO.EstadisticasVentaDTO;
-import com.example.demo.DTO.VentaDiariaDTO;
-import com.example.demo.DTO.VentaMensualDTO;
-import com.example.demo.DTO.VentaRequestDTO;
-import com.example.demo.DTO.VentaResponseDTO;
-import com.example.demo.Services.AuditoriaService;
-import com.example.demo.Services.VentaService;
+import com.example.demo.DTO.Venta.EstadisticasVentaDTO;
+import com.example.demo.DTO.Venta.VentaDiariaDTO;
+import com.example.demo.DTO.Venta.VentaMensualDTO;
+import com.example.demo.DTO.Venta.VentaRequest;
+import com.example.demo.DTO.Venta.VentaResponse;
+import com.example.demo.Services.IAuditoriaService;
+import com.example.demo.Services.IVentaService;
 
 @RestController
 @RequestMapping("/api/ventas")
 public class VentaController {
 
     @Autowired
-    private VentaService ventaService;
+    private IVentaService ventaService;
     @Autowired
-    private AuditoriaService auditoriaService;
+    private IAuditoriaService auditoriaService;
 
- @PostMapping
+    @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
-    public ResponseEntity<VentaResponseDTO> registrarVenta(
-            @RequestBody VentaRequestDTO ventaDTO,
-            @RequestHeader("usuario") String usuario) { // Usuario desde el header
+    public ResponseEntity<VentaResponse> registrarVenta(
+            @RequestBody VentaRequest ventaDTO,
+            @RequestHeader("usuario") String usuario) {
 
-        // Registrar la venta
-        VentaResponseDTO nuevaVenta = ventaService.registrarVenta(ventaDTO);
+        VentaResponse nuevaVenta = ventaService.registrarVenta(ventaDTO);
 
-        // Registrar la auditoría de la venta
         auditoriaService.registrarAuditoria(usuario, "ventas", "registrar",
                 "Venta registrada. Monto: " + nuevaVenta.getTotal(), null, ventaDTO.toString());
 
         return ResponseEntity.ok(nuevaVenta);
     }
+
     @GetMapping("/historial")
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
-    public ResponseEntity<List<VentaResponseDTO>> obtenerHistorial() {
-        List<VentaResponseDTO> historial = ventaService.obtenerTodasLasVentas();
+    public ResponseEntity<List<VentaResponse>> obtenerHistorial() {
+        List<VentaResponse> historial = ventaService.obtenerTodasLasVentas();
         return ResponseEntity.ok(historial);
     }
 
