@@ -2,17 +2,17 @@ package com.example.demo.Services.Impl;
 
 import com.example.demo.Models.Usuario;
 import com.example.demo.Repositories.UsuarioRepository;
-import com.example.demo.Services.ICustomUserDetailsService;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.stream.Collectors;
 
 @Service
-public class CustomUserDetailsServiceImpl implements ICustomUserDetailsService {
+public class CustomUserDetailsServiceImpl implements UserDetailsService {
 
     private final UsuarioRepository usuarioRepository;
 

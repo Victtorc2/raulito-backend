@@ -11,10 +11,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import com.example.demo.Services.*;
 import com.example.demo.Util.JWTUtil;
 
 import java.io.IOException;
@@ -26,12 +26,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     private final JWTUtil jwtService;
-    private final ICustomUserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService; // ✅ Cambiado aquí
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain) throws ServletException, IOException {
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
 
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             filterChain.doFilter(request, response);
@@ -55,9 +55,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             logger.debug("Username extraído: {}", username);
         } catch (Exception e) {
             logger.warn("Token inválido: {}", e.getMessage());
-            // Opcional: Puedes enviar un 401 explícito aquí si quieres:
-            // response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            // return;
             filterChain.doFilter(request, response);
             return;
         }
@@ -74,7 +71,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             } else {
                 logger.warn("Token inválido para el usuario: {}", username);
             }
-
         }
 
         filterChain.doFilter(request, response);

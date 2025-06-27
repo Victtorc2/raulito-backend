@@ -4,7 +4,6 @@ import com.example.demo.DTO.Auth.AuthRequest;
 import com.example.demo.DTO.Auth.AuthResponse;
 import com.example.demo.Models.Usuario;
 import com.example.demo.Services.IAuditoriaService;
-import com.example.demo.Services.ICustomUserDetailsService;
 import com.example.demo.Services.IUsuarioService;
 import com.example.demo.Util.JWTUtil;
 
@@ -15,6 +14,7 @@ import org.springframework.http.*;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService; // ✅
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -27,18 +27,33 @@ public class AuthController {
     private final IUsuarioService usuarioService;
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtService;
-    private final ICustomUserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService; // ✅ Cambiado aquí
     private final IAuditoriaService auditoriaService;
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
+        logger.info("Intentando autenticar usuario {}", request.getCorreo());
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             request.getCorreo(), request.getPassword()));
+            logger.info("Autenticación exitosa");
         } catch (BadCredentialsException e) {
-            logger.warn("Intento de login fallido para correo: {}", request.getCorreo());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            logger.warn("Credenciales inválidas");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    new AuthResponse(null, null, "Credenciales inválidas"));
+        } catch (DisabledException e) {
+            logger.warn("Cuenta deshabilitada");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    new AuthResponse(null, null, "La cuenta está deshabilitada"));
+        } catch (LockedException e) {
+            logger.warn("Cuenta bloqueada");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    new AuthResponse(null, null, "La cuenta está bloqueada"));
+        } catch (AccountExpiredException e) {
+            logger.warn("Cuenta expirada");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                    new AuthResponse(null, null, "La cuenta ha expirado"));
         }
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getCorreo());
