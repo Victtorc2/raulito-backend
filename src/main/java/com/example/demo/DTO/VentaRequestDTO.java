@@ -5,9 +5,8 @@ import java.util.List;
 
 @Data
 public class VentaRequestDTO {
-    private Long usuarioId;
+    private String correo;
     private List<ItemVentaDTO> detalles;
     private String metodoPago;
     private double descuento;
 }
- 

@@ -21,15 +21,19 @@ public class VentaServiceImpl implements VentaService {
     private final UsuarioRepository usuarioRepository;
     private final MovimientoInventarioRepository movimientoRepo;
 
-    
     @Override
 @Transactional
 public VentaResponseDTO registrarVenta(VentaRequestDTO ventaDTO) {
-    if (ventaDTO.getUsuarioId() == null) {
-        throw new IllegalArgumentException("El id del usuario no puede ser null");
-    }
-    Usuario usuario = usuarioRepository.findById(ventaDTO.getUsuarioId())
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    // 1️⃣ Validar que venga el correo
+    if (ventaDTO.getCorreo() == null || ventaDTO.getCorreo().isBlank()) {
+    throw new IllegalArgumentException("El correo del usuario no puede ser null o vacío");
+}
+
+// 2. Buscar al usuario en la BD usando el correo
+Usuario usuario = usuarioRepository
+    .findByCorreo(ventaDTO.getCorreo())
+    .orElseThrow(() -> new RuntimeException(
+        "Usuario no encontrado con correo: " + ventaDTO.getCorreo()));
 
     Venta venta = new Venta();
     venta.setFecha(LocalDateTime.now());
@@ -41,13 +45,13 @@ public VentaResponseDTO registrarVenta(VentaRequestDTO ventaDTO) {
 
     for (ItemVentaDTO item : ventaDTO.getDetalles()) {
         Producto producto = productoRepository.findById(item.getProductoId())
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+            .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
         if (producto.getStock() < item.getCantidad()) {
             throw new RuntimeException("Stock insuficiente para el producto: " + producto.getNombre());
         }
 
-        double precio = producto.getPrecio();
+        double precio   = producto.getPrecio();
         double subtotal = precio * item.getCantidad();
         total += subtotal;
 
@@ -60,7 +64,6 @@ public VentaResponseDTO registrarVenta(VentaRequestDTO ventaDTO) {
         detalle.setCantidad(item.getCantidad());
         detalle.setPrecioUnitario(precio);
         detalle.setSubtotal(subtotal);
-
         detalles.add(detalle);
 
         MovimientoInventario movimiento = new MovimientoInventario();
@@ -71,18 +74,15 @@ public VentaResponseDTO registrarVenta(VentaRequestDTO ventaDTO) {
         movimiento.setTipo(TipoMovimiento.SALIDA);
         movimiento.setFecha(LocalDate.now());
         movimiento.setPrecio(precio);
-
         movimientoRepo.save(movimiento);
     }
 
     venta.setTotal(total);
     venta.setDetalles(detalles);
-
     Venta ventaGuardada = ventaRepository.save(venta);
 
     return mapToResponseDTO(ventaGuardada);
 }
-
 
     private VentaResponseDTO mapToResponseDTO(Venta venta) {
         VentaResponseDTO dto = new VentaResponseDTO();
@@ -161,3 +161,4 @@ public VentaResponseDTO registrarVenta(VentaRequestDTO ventaDTO) {
     }
 
 }
+

@@ -32,26 +32,26 @@ public class SecurityConfig {
 
 @Bean
 public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    http
-            .cors()
-            .and()
-            .csrf(csrf -> csrf.disable())  // Desactiva CSRF si no usas cookies de sesión
-            .authorizeHttpRequests(auth -> auth
-                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Primero permitir todas las OPTIONS (preflight)
-                    .requestMatchers("/auth/login").permitAll()  // Permitir acceso al login sin autenticación
-                    .requestMatchers("/public/**").permitAll()  // Permitir acceso a los recursos públicos
-                    .requestMatchers("/api/productos/*/imagen").permitAll()  // Permitir imágenes de productos sin autenticación
-                    .requestMatchers("/api/productos/**").hasRole("ADMIN")  // Solo EMPLEADO o ADMIN pueden acceder a productos
-                    .requestMatchers("/api/usuarios/**").hasRole("ADMIN")  // Solo ADMIN puede acceder a usuarios
-                                        .requestMatchers("/api/auditoria/**").hasRole("ADMIN")  // Solo ADMIN puede acceder a usuarios
-
-                    .requestMatchers("/api/inventario/**").hasAnyRole("ADMIN", "EMPLEADO")  // ADMIN y EMPLEADO pueden acceder a inventario
-                    .requestMatchers("/api/ventas/**").hasAnyRole("ADMIN", "EMPLEADO")  // ADMIN y EMPLEADO pueden acceder a ventas
-                    .anyRequest().authenticated())  // Cualquier otra solicitud debe estar autenticada
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  // Sin sesión (usamos JWT)
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);  // Filtro para JWT
-    return http.build();
+    return http
+        .csrf(csrf -> csrf.disable())
+        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+            .requestMatchers("/auth/login").permitAll()
+            .requestMatchers("/public/**").permitAll()
+            .requestMatchers("/api/productos/*/imagen").permitAll()
+            .requestMatchers("/api/productos/**").hasRole("ADMIN")
+            .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
+            .requestMatchers("/api/auditoria/**").hasRole("ADMIN")
+            .requestMatchers("/api/inventario/**").hasAnyRole("ADMIN", "EMPLEADO")
+            .requestMatchers("/api/ventas/**").hasAnyRole("ADMIN", "EMPLEADO")
+            .anyRequest().authenticated()
+        )
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+        .build();
 }
+
 
 
     @Bean
