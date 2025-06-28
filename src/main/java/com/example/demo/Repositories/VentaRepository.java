@@ -34,7 +34,7 @@ public interface VentaRepository extends JpaRepository<Venta, Long> {
                     CAST(v.fecha AS date) AS fecha,
                     SUM(v.total) AS total
                 FROM venta v
-                WHERE v.fecha >= CURRENT_DATE - INTERVAL '30 days'
+                WHERE v.fecha >= CURRENT_DATE - INTERVAL 30 day
                 GROUP BY fecha
                 ORDER BY fecha
             """, nativeQuery = true)
