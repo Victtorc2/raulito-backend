@@ -7,5 +7,4 @@ import com.example.demo.Models.Auditoria;
 
 @Repository
 public interface AuditoriaRepository extends JpaRepository<Auditoria, Long> {
-    // Puedes agregar consultas personalizadas aquí si es necesario.
 }

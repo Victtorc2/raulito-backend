@@ -30,7 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@Slf4j // Requiere Lombok, o usa Logger manualmente
+@Slf4j 
 
 @RequestMapping("/api/productos")
 public class ProductoController {

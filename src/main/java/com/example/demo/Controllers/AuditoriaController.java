@@ -13,23 +13,25 @@ import com.example.demo.Models.Auditoria;
 import com.example.demo.Repositories.AuditoriaRepository;
 
 @RestController
-@RequestMapping("/api/auditoria")
+@RequestMapping("/api/auditoria") // ruta
+
 public class AuditoriaController {
 
     @Autowired
     private AuditoriaRepository auditoriaRepository;
 
-    @GetMapping
+    @GetMapping //mapea la peticion http get
     public ResponseEntity<List<Auditoria>> obtenerRegistrosAuditoria() {
-        List<Auditoria> registros = auditoriaRepository.findAll();
-        return ResponseEntity.ok(registros);
+        List<Auditoria> registros = auditoriaRepository.findAll(); // variable registros que almacenara una lista de objetos de tipo auditoria
+        return ResponseEntity.ok(registros); //	Devuelve una respuesta exitosa (200)
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Auditoria> obtenerRegistroAuditoriaPorId(@PathVariable Long id) {
         return auditoriaRepository.findById(id)
                 .map(auditoria -> ResponseEntity.ok(auditoria))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                //Se usa el método map para verificar si existe una auditoría con ese ID, y si existe, se convierte en una respuesta HTTP 200 OK con el objeto encontrado.”
+                .orElseGet(() -> ResponseEntity.notFound().build()); // se ejecuta sino se encontro el objeto   
     }
 }
 
