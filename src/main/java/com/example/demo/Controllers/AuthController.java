@@ -29,8 +29,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
-    
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class); // se crea un objeto logger para registrar los logs , mensajes de seguimientos o errores
+    // estara asociado a la clase authcontroller
     private final UsuarioService usuarioService;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
@@ -53,8 +53,7 @@ public class AuthController {
         String token = jwtService.generateToken(userDetails, usuario);
 
         // Registrar auditoría del inicio de sesión
-        auditoriaService.registrarAuditoria(request.getCorreo(), "auth", "login", 
-            "Inicio de sesión exitoso", null, "Token generado");
+        auditoriaService.registrarAuditoria(request.getCorreo(), "auth", "login", "Inicio de sesión exitoso", null, "Token generado");
 
         // Modificación clave: Remover ROLE_ del rol devuelto
         String role = userDetails.getAuthorities().stream()
