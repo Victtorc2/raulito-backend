@@ -43,7 +43,7 @@ public class ProductoController {
     private AuditoriaService auditoriaService;
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<Producto> obtenerProducto(@PathVariable Long id) {
         log.debug("Solicitud GET para obtener producto con ID: {}", id);
         return productoService.obtenerProductoPorId(id)
@@ -58,7 +58,7 @@ public class ProductoController {
     }
 
 @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
 public ResponseEntity<?> crearProducto(
         @RequestPart("producto") String productoJson,
         @RequestPart(value = "imagen", required = false) MultipartFile imagen,
@@ -121,7 +121,7 @@ public ResponseEntity<?> crearProducto(
 
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<?> actualizarProducto(
             @PathVariable Long id,
             @RequestPart("producto") String productoJson,
@@ -150,7 +150,7 @@ public ResponseEntity<?> crearProducto(
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public ResponseEntity<Void> eliminarProducto(@PathVariable Long id, @RequestHeader("usuario") String usuario) {
         try {
             Producto producto = productoService.obtenerProductoPorId(id)
@@ -198,14 +198,14 @@ public ResponseEntity<?> crearProducto(
     }
 
     @GetMapping("/alertas/vencimiento")
-    @PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public List<Producto> productosProximosAVencer(@RequestParam(defaultValue = "7") int dias) {
         log.info("Buscando productos próximos a vencer en {} días", dias);
         return productoService.listarProductosProximosAVencer(dias);
     }
 
     @GetMapping("/alertas/stock-bajo")
-    @PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     public List<Producto> productosStockBajo(@RequestParam(defaultValue = "10") int stockMinimo) {
         log.info("Buscando productos con stock bajo (menos de {} unidades)", stockMinimo);
         return productoService.listarProductosStockBajo(stockMinimo);

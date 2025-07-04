@@ -40,7 +40,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             .requestMatchers("/auth/login").permitAll()
             .requestMatchers("/public/**").permitAll()
             .requestMatchers("/api/productos/*/imagen").permitAll()
-            .requestMatchers("/api/productos/**").hasRole("ADMIN")
+            .requestMatchers("/api/productos/**").hasAnyRole("ADMIN", "EMPLEADO")
             .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
             .requestMatchers("/api/auditoria/**").hasRole("ADMIN")
             .requestMatchers("/api/inventario/**").hasAnyRole("ADMIN", "EMPLEADO")
