@@ -30,35 +30,34 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomUserDetailsService userDetailsService;
 
-@Bean
-public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    return http
-        .csrf(csrf -> csrf.disable())
-        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-            .requestMatchers("/auth/login").permitAll()
-            .requestMatchers("/public/**").permitAll()
-            .requestMatchers("/api/productos/*/imagen").permitAll()
-            .requestMatchers("/api/productos/**").hasAnyRole("ADMIN", "EMPLEADO")
-            .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
-            .requestMatchers("/api/auditoria/**").hasRole("ADMIN")
-            .requestMatchers("/api/inventario/**").hasAnyRole("ADMIN", "EMPLEADO")
-            .requestMatchers("/api/ventas/**").hasAnyRole("ADMIN", "EMPLEADO")
-            .anyRequest().authenticated()
-        )
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-        .build();
-}
-
-
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        return http
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/auth/login").permitAll()
+                        .requestMatchers("/public/**").permitAll()
+                        .requestMatchers("/api/productos/*/imagen").permitAll()
+                        .requestMatchers("/api/productos/**").hasAnyRole("ADMIN", "EMPLEADO")
+                        .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
+                        .requestMatchers("/api/auditoria/**").hasRole("ADMIN")
+                        .requestMatchers("/api/inventario/**").hasAnyRole("ADMIN", "EMPLEADO")
+                        .requestMatchers("/api/ventas/**").hasAnyRole("ADMIN", "EMPLEADO")
+                        .anyRequest().authenticated())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();
+    }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(Arrays.asList("https://raulito-frontend.up.railway.app")); 
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:5173",
+                "https://raulito-frontend-production.up.railway.app"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
@@ -72,7 +71,8 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     public AuthenticationManager authManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-@Bean
+
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
